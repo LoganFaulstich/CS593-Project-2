@@ -10,21 +10,21 @@ let player = {
   xSpeed: 0,
   decelerateLeft: false,
   decelerateRight: false,
-  jumpImpulse: -20,
   walkImpulse: 2,
   walkCap: 20,
   color: "green",
   canJump: true,
 };
+const jumpImpulse = -20;
 //Game State
 const STATES = { MENU: "menu", PLAYING: "playing", GAMEOVER: "gameover" };
 let currentState = STATES.PLAYING;
 //Action Map
 let ACTION_MAP = {
   " ": "jump",
-  ArrowUp: "jump",
-  ArrowLeft: "left",
-  ArrowRight: "right",
+  "ArrowUp": "jump",
+  "ArrowLeft": "left",
+  "ArrowRight": "right",
 };
 
 //Objects
@@ -93,8 +93,8 @@ function updatePlaying() {
 document.addEventListener("keydown", (e) => {
   const action = ACTION_MAP[e.key];
   if(action) e.preventDefault();
-  if (action === "jump") {
-    player.ySpeed = player.jumpImpulse;
+  if (action === "jump" && player.canJump) {
+    player.ySpeed = jumpImpulse;
     player.canJump = false;
   }
   if (action === "left" && player.xSpeed > -player.walkCap) {
