@@ -14,14 +14,17 @@ let player = {
   walkCap: 20,
   color: "green",
   canJump: true,
+  facing: "right"
 };
+let score = 0;
+
 const jumpImpulse = -20;
 //Game State
 const STATES = { MENU: "menu", PLAYING: "playing", GAMEOVER: "gameover" };
 let currentState = STATES.PLAYING;
 //Action Map
 let ACTION_MAP = {
-  " ": "jump",
+  " ": "fire",
   "ArrowUp": "jump",
   "ArrowLeft": "left",
   "ArrowRight": "right",
@@ -30,6 +33,9 @@ let ACTION_MAP = {
 //Objects
 let obstacles = [];
 let platforms = [];
+//projectiles
+let lemons = [];
+
 
 const GROUND_Y = 356;
 const GRAVITY = 0.65;
@@ -75,9 +81,52 @@ function playerPlatformCollide() {
     }
   }
 }
-
+function fireLemon() {
+    if(player.facing === "right"){
+        lemons.push({
+            x: player.x + player.w, 
+            y: player.y + player.h / 2, 
+            r: 6, 
+            xSpeed: 8,
+            facing: "right",
+            color: "orange" 
+        })
+    }
+    if(player.facing === "left"){
+        lemons.push({
+            x: player.x + player.w, 
+            y: player.y + player.h / 2, 
+            r: 6, 
+            xSpeed: -8,
+            facing: "left",
+            color: "orange" 
+        })
+    }
+}
+function drawLemon() {
+  lemons.forEach(lemon => { 
+    ctx.fillStyle = lemon.color; 
+      ctx.beginPath(); 
+      ctx.arc(lemon.x, lemon.y, lemon.r, 0, Math.PI * 2); 
+                ctx.fill(); 
+  })
+}
 function updatePlaying() {
   // Physics
+  playerUpdate()
+  lemonUpdate()
+}
+
+function lemonUpdate() {
+  for (let i = lemons.length - 1; i >= 0; i--) { 
+                lemons[i].x += lemons[i].xSpeed; 
+            if (lemons[i].x - lemons[i].r > canvas.width || lemons[i].x + lemons[i].r < 0) { 
+                lemons.splice(i, 1); 
+                }
+            } 
+}
+
+function playerUpdate() {
   player.ySpeed += GRAVITY;
   player.y += player.ySpeed;
 
@@ -93,6 +142,9 @@ function updatePlaying() {
 document.addEventListener("keydown", (e) => {
   const action = ACTION_MAP[e.key];
   if(action) e.preventDefault();
+  if (action === "fire") {
+    fireLemon()
+  }
   if (action === "jump" && player.canJump) {
     player.ySpeed = jumpImpulse;
     player.canJump = false;
@@ -100,10 +152,12 @@ document.addEventListener("keydown", (e) => {
   if (action === "left" && player.xSpeed > -player.walkCap) {
     player.xSpeed = -player.walkImpulse;
     decelerateLeft = false;
+    player.facing = "left";
   }
   if (action === "right" && player.xSpeed < player.walkCap) {
     player.xSpeed = player.walkImpulse;
     decelerateRight = false;
+    player.facing = "right";
   }
 });
 document.addEventListener("keyup", (e) => {
@@ -117,6 +171,33 @@ document.addEventListener("keyup", (e) => {
   }
 });
 
+function drawMenu() {
+  ctx.fillStyle = '#111'; 
+  ctx.fillRect(0, 0, canvas.width, canvas.height);  
+  ctx.fillStyle = '#ffffff'; 
+  ctx.textAlign = 'center'; 
+  ctx.font = 'bold 48px Arial'; 
+  ctx.fillText('Platform Shooter', canvas.width / 2, 150); 
+  ctx.font = '22px Arial'; 
+  ctx.fillText('Press SPACE to start', canvas.width / 2, 220); 
+  ctx.fillText('During play: SPACE = shoot', canvas.width / 2, 255); 
+  ctx.fillText('Arrow Left/Right = move', canvas.width / 2, 290);
+  ctx.fillText('Arrow Up = jump', canvas.width / 2, 325)
+}
+
+function drawGameOver() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height); 
+        ctx.fillStyle = '#ff4d4d'; 
+        ctx.textAlign = 'center'; 
+        ctx.font = 'bold 52px Arial'; 
+        ctx.fillText('GAME OVER', canvas.width / 2, 170); 
+ 
+        ctx.fillStyle = '#ffffff'; 
+        ctx.font = '24px Arial'; 
+//        ctx.fillText(`Final Score: ${Math.floor(score)}`, canvas.width / 2, 225); 
+        ctx.fillText('Press SPACE for menu', canvas.width / 2, 270); 
+}
 function resetGame() {
   obstacles = [];
   platforms = [];
@@ -146,7 +227,7 @@ function drawPlaying() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGround();
-
+  drawLemon();
   ctx.fillStyle = "#7dd3fc";
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
