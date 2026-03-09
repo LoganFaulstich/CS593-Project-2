@@ -8,16 +8,17 @@ let player = {
   h: 40,
   ySpeed: 0,
   xSpeed: 0,
+  walk: false,
   decelerateLeft: false,
   decelerateRight: false,
   walkImpulse: 2,
-  walkCap: 20,
+  walkCap: 10,
   color: "green",
   canJump: true,
   facing: "right"
 };
 let score = 0;
-
+const decelerationRate = 2.5;
 const jumpImpulse = -20;
 //Game State
 const STATES = { MENU: "menu", PLAYING: "playing", GAMEOVER: "gameover" };
@@ -129,9 +130,41 @@ function lemonUpdate() {
 function playerUpdate() {
   player.ySpeed += GRAVITY;
   player.y += player.ySpeed;
-
+  if(player.decelerateLeft) {
+    player.xSpeed += decelerationRate;
+    if(player.xSpeed >= 0){
+      player.xSpeed = 0;
+      player.decelerateLeft = false; 
+    } 
+  }
+  if(player.decelerateRight) {
+    player.xSpeed -= decelerationRate;
+    if(player.xSpeed <= 0){
+      player.xSpeed = 0;
+      player.decelerateRight = false;
+    } 
+  }
+  if(player.walk) {
+    switch(player.facing) {
+      case 'right':
+        if(player.x < canvas.width - player.w){
+          player.xSpeed += player.walkImpulse;
+        }
+        break;
+      case 'left':
+        if (player.x > 0){
+          player.xSpeed -= player.walkImpulse;
+        }
+        break;
+    }
+  }
   player.x += player.xSpeed;
-
+  if(player.x >= canvas.width - player.w) {
+    player.x = canvas.width - player.w;
+  }
+  if(player.x <= 0){
+    player.x = 0
+  }
   if (player.y + player.h >= GROUND_Y) {
     player.y = GROUND_Y - player.h;
     player.ySpeed = 0;
@@ -151,14 +184,14 @@ document.addEventListener("keydown", (e) => {
       player.canJump = false;
     }
     if (action === "left" && player.xSpeed > -player.walkCap) {
-      player.xSpeed = -player.walkImpulse;
-      decelerateLeft = false;
+      player.decelerateLeft = false;
       player.facing = "left";
+      player.walk = true;
     }
     if (action === "right" && player.xSpeed < player.walkCap) {
-      player.xSpeed = player.walkImpulse;
-      decelerateRight = false;
+      player.decelerateRight = false;
       player.facing = "right";
+      player.walk = true;
     }
   }
   else if(currentState === STATES.MENU) {
@@ -172,14 +205,29 @@ document.addEventListener("keydown", (e) => {
     }
   }
 });
+
 document.addEventListener("keyup", (e) => {
   const action = ACTION_MAP[e.key];
-  if (action === "left" || action === "right") {
-    player.xSpeed = 0;
-    //decelerateLeft = true;
-    //variable means in game loop, the player is reducing their speed at this
-    // point, to make the transition between pressing a direciton and not smoother.
-    // Once 0 is hit or exceeded in the loop this variable should be returned to false.
+  if(action) e.preventDefault();
+  if(currentState === STATES.PLAYING){
+    if (action === "left" ) {
+      player.decelerateLeft = true;
+      if (player.facing === "left"){
+      player.walk = false;
+      }
+      //variable means in game loop, the player is reducing their speed at this
+      // point, to make the transition between pressing a direciton and not smoother.
+      // Once 0 is hit or exceeded in the loop this variable should be returned to false.
+    }
+    if (action === "right" ) {
+      player.decelerateRight = true;
+      if (player.facing === "right"){
+        player.walk = false;
+      }
+      //variable means in game loop, the player is reducing their speed at this
+      // point, to make the transition between pressing a direciton and not smoother.
+      // Once 0 is hit or exceeded in the loop this variable should be returned to false.
+    }
   }
 });
 
