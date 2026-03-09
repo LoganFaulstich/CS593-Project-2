@@ -21,7 +21,7 @@ let score = 0;
 const jumpImpulse = -20;
 //Game State
 const STATES = { MENU: "menu", PLAYING: "playing", GAMEOVER: "gameover" };
-let currentState = STATES.PLAYING;
+let currentState = STATES.MENU;
 //Action Map
 let ACTION_MAP = {
   " ": "fire",
@@ -37,7 +37,7 @@ let platforms = [];
 let lemons = [];
 
 
-const GROUND_Y = 356;
+const GROUND_Y = 600;
 const GRAVITY = 0.65;
 
 function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
@@ -142,22 +142,34 @@ function playerUpdate() {
 document.addEventListener("keydown", (e) => {
   const action = ACTION_MAP[e.key];
   if(action) e.preventDefault();
-  if (action === "fire") {
-    fireLemon()
+  if(currentState === STATES.PLAYING){
+    if (action === "fire") {
+      fireLemon()
+    }
+    if (action === "jump" && player.canJump) {
+      player.ySpeed = jumpImpulse;
+      player.canJump = false;
+    }
+    if (action === "left" && player.xSpeed > -player.walkCap) {
+      player.xSpeed = -player.walkImpulse;
+      decelerateLeft = false;
+      player.facing = "left";
+    }
+    if (action === "right" && player.xSpeed < player.walkCap) {
+      player.xSpeed = player.walkImpulse;
+      decelerateRight = false;
+      player.facing = "right";
+    }
   }
-  if (action === "jump" && player.canJump) {
-    player.ySpeed = jumpImpulse;
-    player.canJump = false;
+  else if(currentState === STATES.MENU) {
+    if (action === "fire") {
+      currentState = STATES.PLAYING;
+    }
   }
-  if (action === "left" && player.xSpeed > -player.walkCap) {
-    player.xSpeed = -player.walkImpulse;
-    decelerateLeft = false;
-    player.facing = "left";
-  }
-  if (action === "right" && player.xSpeed < player.walkCap) {
-    player.xSpeed = player.walkImpulse;
-    decelerateRight = false;
-    player.facing = "right";
+  else if (currentState === STATES.GAMEOVER) {
+    if (action === "fire") {
+      currentState = STATES.MENU;
+    }
   }
 });
 document.addEventListener("keyup", (e) => {
@@ -214,7 +226,8 @@ function resetGame() {
     walkImpulse: 2,
     walkCap: 20,
     color: "green",
-    canJump: true,
+    facing: "right",
+    canJump: true
   };
 }
 
@@ -240,14 +253,14 @@ function drawPlaying() {
 function gameLoop() {
   switch (currentState) {
     case STATES.MENU:
-      //drawMenu();
+      drawMenu();
       break;
     case STATES.PLAYING:
       updatePlaying();
       drawPlaying();
       break;
     case STATES.GAMEOVER:
-      //drawGameOver();
+      drawGameOver();
       break;
   }
 
