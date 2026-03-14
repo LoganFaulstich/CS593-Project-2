@@ -2,8 +2,8 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 //Player Variables
 let player = {
-  x: 100,
-  y: 200,
+  x: 250,
+  y: 100,
   w: 40,
   h: 40,
   ySpeed: 0,
@@ -11,15 +11,15 @@ let player = {
   walk: false,
   decelerateLeft: false,
   decelerateRight: false,
-  walkImpulse: 2,
-  walkCap: 10,
+  walkImpulse: 0.5,
+  walkCap: 7,
   color: "green",
   canJump: true,
   facing: "right"
 };
 let score = 0;
 const decelerationRate = 2.5;
-const jumpImpulse = -20;
+const jumpImpulse = -15;
 //Game State
 const STATES = { MENU: "menu", PLAYING: "playing", GAMEOVER: "gameover" };
 let currentState = STATES.MENU;
@@ -30,6 +30,22 @@ let ACTION_MAP = {
   "ArrowLeft": "left",
   "ArrowRight": "right",
 };
+//Map setup in case we want to make multiple setups.
+let LEVEL_MAP = {
+  1: "Level 1",
+  2: "Level 2",
+  3: "Level 3"
+}
+
+let level1 = [
+  [600, 40, 150, 450],
+  [100, 40, 200, 300],
+  [100, 40, 400, 300],
+  [100, 40, 600, 300],  
+  [700, 40, 100, 600]
+ ]
+
+ let levelGenerated = false;
 
 //Objects
 let obstacles = [];
@@ -49,6 +65,15 @@ function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
     y: yPos,
     color: typeColor,
   });
+}
+
+function generateLevel(level){
+  level.forEach(plat =>
+  {
+    generatePlatform(plat[0], plat[1], plat[2], plat[3])
+  }
+  )
+  levelGenerated = true;
 }
 function generateObstacles(xPos, yPos, typeColor = "blue") {
   obstacles.push({
@@ -70,14 +95,32 @@ function aabb(a, b) {
 function isAbove(a, b) {
   return a.y < b.y;
 }
+function isBelow(a,b) {
+  return a.y + a.h > b.y + b.h;
+}
 
+//onPlat for use checking if the player can jump, in essence. Also used to block the gravity function when on solid ground. 
+// May want to adjust room for error for a.y + ah. > plat.y -[value] figure to minimize weird visuals.
+function onPlat(a) {
+  onSolid = false;
+  platforms.forEach(plat => {
+    if (a.y + a.h <= plat.y && !isBelow(a, plat) && a.y + a.h > plat.y -10 && a.x < plat.x + plat.w && a.x + a.w > plat.x) {
+      onSolid = true;
+    }
+  })
+  return onSolid;
+}
 function playerPlatformCollide() {
   for (let i = 0; i < platforms.length; i++) {
     if (aabb(platforms[i], player)) {
       player.ySpeed = 0;
       if (isAbove(player, platforms[i])) {
-        canJump = true;
-        player.y = platforms.y + player.h;
+        player.canJump = true;
+        player.y = platforms[i].y - player.h;
+        
+      }
+      if (isBelow(player, platforms[i])){
+        player.y = platforms[i].y +platforms[i].h
       }
     }
   }
@@ -114,6 +157,9 @@ function drawLemon() {
 }
 function updatePlaying() {
   // Physics
+  if (!levelGenerated) {
+    generateLevel(level1)
+  }
   playerUpdate()
   lemonUpdate()
 }
@@ -128,7 +174,10 @@ function lemonUpdate() {
 }
 
 function playerUpdate() {
+  if(!onPlat(player)){
   player.ySpeed += GRAVITY;
+  }
+  playerPlatformCollide();
   player.y += player.ySpeed;
   if(player.decelerateLeft) {
     player.xSpeed += decelerationRate;
@@ -149,11 +198,17 @@ function playerUpdate() {
       case 'right':
         if(player.x < canvas.width - player.w){
           player.xSpeed += player.walkImpulse;
+          if (player.xSpeed > player.walkCap) {
+            player.xSpeed = player.walkCap;
+          }
         }
         break;
       case 'left':
         if (player.x > 0){
           player.xSpeed -= player.walkImpulse;
+          if (player.xSpeed < -player.walkCap) {
+            player.xSpeed = -player.walkCap
+          }
         }
         break;
     }
@@ -179,7 +234,7 @@ document.addEventListener("keydown", (e) => {
     if (action === "fire") {
       fireLemon()
     }
-    if (action === "jump" && player.canJump) {
+    if (action === "jump" && player.canJump && onPlat(player)) {
       player.ySpeed = jumpImpulse;
       player.canJump = false;
     }
@@ -262,21 +317,21 @@ function resetGame() {
   obstacles = [];
   platforms = [];
   player = {
-    x: 100,
-    y: 200,
+    x: 250,
+    y: 100,
     w: 40,
     h: 40,
     ySpeed: 0,
     xSpeed: 0,
     decelerateLeft: false,
     decelerateRight: false,
-    jumpImpulse: 10,
-    walkImpulse: 2,
-    walkCap: 20,
+    walkImpulse: 0.5,
+    walkCap: 7,
     color: "green",
     facing: "right",
     canJump: true
   };
+  levelGenerated = false;
 }
 
 function drawGround() {
@@ -289,6 +344,7 @@ function drawPlaying() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGround();
   drawLemon();
+  drawPlatforms();
   ctx.fillStyle = "#7dd3fc";
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
@@ -296,8 +352,14 @@ function drawPlaying() {
   for (const obstacle of obstacles) {
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
   }
-}
 
+}
+function drawPlatforms() {
+  platforms.forEach(plat => {
+    ctx.fillStyle = plat.color;
+    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+  });
+}
 function gameLoop() {
   switch (currentState) {
     case STATES.MENU:
