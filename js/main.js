@@ -1,13 +1,3 @@
-import {
-  canvas,
-  gameState,
-  STATES,
-  updatePlaying,
-  resetGame,
-} from "./gameLogic.js";
-import { drawMenu, drawGameOver, drawPlaying } from "./gameRender.js";
-import { setupInput } from "./input.js";
-
 setupInput();
 
 function gameLoop() {

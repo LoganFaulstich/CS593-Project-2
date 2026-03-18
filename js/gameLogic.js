@@ -1,18 +1,18 @@
-export const canvas = document.getElementById("game");
-export const ctx = canvas.getContext("2d");
+var canvas = document.getElementById("game");
+var ctx = canvas.getContext("2d");
 
-export const GROUND_Y = 600;
-export const GRAVITY = 0.65;
-export const decelerationRate = 2.5;
-export const jumpImpulse = -15;
+var GROUND_Y = 600;
+var GRAVITY = 0.65;
+var decelerationRate = 2.5;
+var jumpImpulse = -15;
 
-export const STATES = {
+var STATES = {
   MENU: "menu",
   PLAYING: "playing",
   GAMEOVER: "gameover",
 };
 
-export const ACTION_MAP = {
+var ACTION_MAP = {
   " ": "fire",
   ArrowUp: "jump",
   W: "jump",
@@ -25,13 +25,13 @@ export const ACTION_MAP = {
   d: "right",
 };
 
-export const LEVEL_MAP = {
+var LEVEL_MAP = {
   1: "Level 1",
   2: "Level 2",
   3: "Level 3",
 };
 
-export const level1 = [
+var level1 = [
   [600, 40, 150, 450],
   [100, 40, 200, 300],
   [100, 40, 400, 300],
@@ -39,12 +39,12 @@ export const level1 = [
   [700, 40, 100, 600],
 ];
 
-export const gameState = {
+var gameState = {
   currentState: STATES.MENU,
   score: 0,
 };
 
-export const player = {
+var player = {
   x: 250,
   y: 100,
   w: 40,
@@ -61,13 +61,13 @@ export const player = {
   facing: "right",
 };
 
-export let obstacles = [];
-export let platforms = [];
-export let lemons = [];
-export let enemies = [];
-export let levelGenerated = false;
+var obstacles = [];
+var platforms = [];
+var lemons = [];
+var enemies = [];
+var levelGenerated = false;
 
-export function generatePlatform(
+function generatePlatform(
   width,
   height,
   xPos,
@@ -77,7 +77,7 @@ export function generatePlatform(
   platforms.push({ w: width, h: height, x: xPos, y: yPos, color: typeColor });
 }
 
-export function generateLevel(level) {
+function generateLevel(level) {
   level.forEach((plat) => {
     generatePlatform(plat[0], plat[1], plat[2], plat[3]);
   });
@@ -87,29 +87,29 @@ export function generateLevel(level) {
   levelGenerated = true;
 }
 
-export function generateObstacles(xPos, yPos, typeColor = "blue") {
+function generateObstacles(xPos, yPos, typeColor = "blue") {
   obstacles.push({ w: 40, h: 40, x: xPos, y: yPos, color: typeColor });
 }
 
-export function generateEnemy(xPos, yPos, typeColor) {
+function generateEnemy(xPos, yPos, typeColor) {
   enemies.push({ w: 40, h: 40, x: xPos, y: yPos, color: typeColor });
 }
 
-export function aabb(a, b) {
+function aabb(a, b) {
   return (
     a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
   );
 }
 
-export function isAbove(a, b) {
+function isAbove(a, b) {
   return a.y < b.y;
 }
 
-export function isBelow(a, b) {
+function isBelow(a, b) {
   return a.y + a.h > b.y + b.h;
 }
 
-export function onPlat(a) {
+function onPlat(a) {
   let onSolid = false;
   platforms.forEach((plat) => {
     if (
@@ -125,7 +125,7 @@ export function onPlat(a) {
   return onSolid;
 }
 
-export function playerPlatformCollide() {
+function playerPlatformCollide() {
   for (let i = 0; i < platforms.length; i++) {
     if (aabb(platforms[i], player)) {
       player.ySpeed = 0;
@@ -140,7 +140,7 @@ export function playerPlatformCollide() {
   }
 }
 
-export function fireLemon() {
+function fireLemon() {
   const speed = player.facing === "right" ? 8 : -8;
   lemons.push({
     x: player.x + player.w,
@@ -152,7 +152,7 @@ export function fireLemon() {
   });
 }
 
-export function lemonUpdate() {
+function lemonUpdate() {
   for (let i = lemons.length - 1; i >= 0; i--) {
     lemons[i].x += lemons[i].xSpeed;
     if (
@@ -164,7 +164,7 @@ export function lemonUpdate() {
   }
 }
 
-export function playerUpdate() {
+function playerUpdate() {
   if (!onPlat(player)) {
     player.ySpeed += GRAVITY;
   }
@@ -221,11 +221,11 @@ export function playerUpdate() {
   }
 }
 
-export function enemyUpdate() {
+function enemyUpdate() {
 
 }
 
-export function updatePlaying() {
+function updatePlaying() {
   if (!levelGenerated) {
     generateLevel(level1);
   }
@@ -234,7 +234,7 @@ export function updatePlaying() {
   enemyUpdate();
 }
 
-export function resetGame() {
+function resetGame() {
   enemies.length = 0;
   platforms.length = 0;
   lemons.length = 0;

@@ -1,16 +1,4 @@
-import {
-  ctx,
-  canvas,
-  GROUND_Y,
-  gameState,
-  player,
-  obstacles,
-  platforms,
-  lemons,
-  enemies,
-} from "./gameLogic.js";
-
-export function drawMenu() {
+function drawMenu() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#ffffff";
@@ -24,7 +12,7 @@ export function drawMenu() {
   ctx.fillText("Arrow Up = jump", canvas.width / 2, 325);
 }
 
-export function drawGameOver() {
+function drawGameOver() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#ff4d4d";
@@ -36,26 +24,26 @@ export function drawGameOver() {
   ctx.fillText("Press SPACE for menu", canvas.width / 2, 270);
 }
 
-export function drawGround() {
+function drawGround() {
   ctx.fillStyle = "#2f2f2f";
   ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
 }
 
-export function drawPlatforms() {
+function drawPlatforms() {
   platforms.forEach((plat) => {
     ctx.fillStyle = plat.color;
     ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
   });
 }
 
-export function drawEnemies() {
+function drawEnemies() {
   enemies.forEach((enemy) => {
     ctx.fillStyle = enemy.color || "red";
     ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
   });
 }
 
-export function drawLemon() {
+function drawLemon() {
   lemons.forEach((lemon) => {
     ctx.fillStyle = lemon.color;
     ctx.beginPath();
@@ -64,7 +52,7 @@ export function drawLemon() {
   });
 }
 
-export function drawPlaying() {
+function drawPlaying() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGround();
@@ -75,7 +63,8 @@ export function drawPlaying() {
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
   ctx.fillStyle = "#f97316";
-  for (const obstacle of obstacles) {
+  for (var i = 0; i < obstacles.length; i++) {
+    var obstacle = obstacles[i];
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
   }
 }

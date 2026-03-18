@@ -1,15 +1,6 @@
-import {
-  ACTION_MAP,
-  STATES,
-  gameState,
-  player,
-  onPlat,
-  fireLemon,
-} from "./gameLogic.js";
-
-export function setupInput() {
-  document.addEventListener("keydown", (e) => {
-    const action = ACTION_MAP[e.key];
+function setupInput() {
+  document.addEventListener("keydown", function (e) {
+    var action = ACTION_MAP[e.key];
     if (action) e.preventDefault();
 
     if (gameState.currentState === STATES.PLAYING) {
@@ -41,8 +32,8 @@ export function setupInput() {
     }
   });
 
-  document.addEventListener("keyup", (e) => {
-    const action = ACTION_MAP[e.key];
+  document.addEventListener("keyup", function (e) {
+    var action = ACTION_MAP[e.key];
     if (action) e.preventDefault();
 
     if (gameState.currentState === STATES.PLAYING) {
