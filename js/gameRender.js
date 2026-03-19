@@ -6,6 +6,10 @@ player_jump.src = "assets/Player_Jump.png";
 var player_sad = new Image();
 player_sad.src = "assets/Player_Sad.png";
 
+var enemyImage;
+enemyImage = new Image();
+enemyImage.src = "assets/Enemy.png";
+
 var shakeIntensity = 0;
 var shakeDecay = 0.9;
 
@@ -71,7 +75,7 @@ function drawPlatforms() {
 function drawEnemies() {
   enemies.forEach((enemy) => {
     ctx.fillStyle = enemy.color || "red";
-    ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+    ctx.drawImage(enemyImage, enemy.x, enemy.y, enemy.w, enemy.h);
   });
 }
 
