@@ -7,6 +7,7 @@ function gameLoop(currentTime) {
   switch (gameState.currentState) {
     case STATES.MENU:
       drawMenu();
+      resetGame();
       break;
     case STATES.PLAYING:
       updatePlaying(deltaTime);
