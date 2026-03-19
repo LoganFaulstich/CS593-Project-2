@@ -1,3 +1,9 @@
+var image;
+var player_happy = new Image();
+player_happy.src = "assets/Player_Happy.png";
+var player_jump = new Image();
+player_jump.src = "assets/Player_Jump.png";
+
 function drawMenu() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -52,6 +58,16 @@ function drawLemon() {
   });
 }
 
+function drawPlayer() {
+  if (player.state === "happy") {
+    image = player_happy;
+  } else if (player.state === "jump") {
+    image = player_jump;
+  }
+  ctx.fillStyle = "#7dd3fc";
+  ctx.drawImage(image, player.x, player.y, player.w, player.h);
+}
+
 function drawPlaying() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -59,8 +75,7 @@ function drawPlaying() {
   drawLemon();
   drawPlatforms();
   drawEnemies();
-  ctx.fillStyle = "#7dd3fc";
-  ctx.fillRect(player.x, player.y, player.w, player.h);
+  drawPlayer();
 
   ctx.fillStyle = "#f97316";
   for (var i = 0; i < obstacles.length; i++) {

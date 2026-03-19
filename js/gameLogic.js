@@ -39,6 +39,10 @@ var level1 = [
   [700, 40, 100, 600],
 ];
 
+var time = {
+  lastTime: 0,
+};
+
 var gameState = {
   currentState: STATES.MENU,
   score: 0,
@@ -59,6 +63,7 @@ var player = {
   color: "green",
   canJump: true,
   facing: "right",
+  state: "happy",
 };
 
 var obstacles = [];
@@ -152,9 +157,9 @@ function fireLemon() {
   });
 }
 
-function lemonUpdate() {
+function lemonUpdate(deltaTime) {
   for (let i = lemons.length - 1; i >= 0; i--) {
-    lemons[i].x += lemons[i].xSpeed;
+    lemons[i].x += lemons[i].xSpeed * deltaTime;
     if (
       lemons[i].x - lemons[i].r > canvas.width ||
       lemons[i].x + lemons[i].r < 0
@@ -164,15 +169,18 @@ function lemonUpdate() {
   }
 }
 
-function playerUpdate() {
+function playerUpdate(deltaTime) {
   if (!onPlat(player)) {
-    player.ySpeed += GRAVITY;
+    player.ySpeed += GRAVITY * deltaTime;
+    player.state = "jump";
+  } else {
+    player.state = "happy";
   }
   playerPlatformCollide();
-  player.y += player.ySpeed;
+  player.y += player.ySpeed * deltaTime;
 
   if (player.decelerateLeft) {
-    player.xSpeed += decelerationRate;
+    player.xSpeed += decelerationRate * deltaTime;
     if (player.xSpeed >= 0) {
       player.xSpeed = 0;
       player.decelerateLeft = false;
@@ -180,7 +188,7 @@ function playerUpdate() {
   }
 
   if (player.decelerateRight) {
-    player.xSpeed -= decelerationRate;
+    player.xSpeed -= decelerationRate * deltaTime;
     if (player.xSpeed <= 0) {
       player.xSpeed = 0;
       player.decelerateRight = false;
@@ -190,14 +198,14 @@ function playerUpdate() {
   if (player.walk) {
     if (player.facing === "right") {
       if (player.x < canvas.width - player.w) {
-        player.xSpeed += player.walkImpulse;
+        player.xSpeed += player.walkImpulse * deltaTime;
         if (player.xSpeed > player.walkCap) {
           player.xSpeed = player.walkCap;
         }
       }
     } else {
       if (player.x > 0) {
-        player.xSpeed -= player.walkImpulse;
+        player.xSpeed -= player.walkImpulse * deltaTime;
         if (player.xSpeed < -player.walkCap) {
           player.xSpeed = -player.walkCap;
         }
@@ -205,7 +213,7 @@ function playerUpdate() {
     }
   }
 
-  player.x += player.xSpeed;
+  player.x += player.xSpeed * deltaTime;
 
   if (player.x >= canvas.width - player.w) {
     player.x = canvas.width - player.w;
@@ -221,17 +229,17 @@ function playerUpdate() {
   }
 }
 
-function enemyUpdate() {
+function enemyUpdate(deltaTime) {
 
 }
 
-function updatePlaying() {
+function updatePlaying(deltaTime) {
   if (!levelGenerated) {
     generateLevel(level1);
   }
-  playerUpdate();
-  lemonUpdate();
-  enemyUpdate();
+  playerUpdate(deltaTime);
+  lemonUpdate(deltaTime);
+  enemyUpdate(deltaTime);
 }
 
 function resetGame() {
