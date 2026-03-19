@@ -3,6 +3,25 @@ var player_happy = new Image();
 player_happy.src = "assets/Player_Happy.png";
 var player_jump = new Image();
 player_jump.src = "assets/Player_Jump.png";
+var player_sad = new Image();
+player_sad.src = "assets/Player_Sad.png";
+
+var shakeIntensity = 0;
+var shakeDecay = 0.9;
+
+function triggerShake(amount) {
+  shakeIntensity = amount;
+}
+
+function applyShake() {
+  if (shakeIntensity > 0.1) {
+    const shakeX = (Math.random() - 0.5) * shakeIntensity;
+    const shakeY = (Math.random() - 0.5) * shakeIntensity;
+    ctx.translate(shakeX, shakeY);
+    shakeIntensity *= shakeDecay;
+  }
+}
+
 
 function drawMenu() {
   ctx.fillStyle = "#111";
@@ -13,9 +32,8 @@ function drawMenu() {
   ctx.fillText("Platform Shooter", canvas.width / 2, 150);
   ctx.font = "22px Arial";
   ctx.fillText("Press SPACE to start", canvas.width / 2, 220);
-  ctx.fillText("During play: SPACE = shoot", canvas.width / 2, 255);
-  ctx.fillText("Arrow Left/Right = move", canvas.width / 2, 290);
-  ctx.fillText("Arrow Up = jump", canvas.width / 2, 325);
+  ctx.fillText("Use WASD or Arrow Keys to move", canvas.width / 2, 255);
+  ctx.fillText("Use SPACE to shoot", canvas.width / 2, 290);
 }
 
 function drawGameOver() {
@@ -28,6 +46,14 @@ function drawGameOver() {
   ctx.fillStyle = "#ffffff";
   ctx.font = "24px Arial";
   ctx.fillText("Press SPACE for menu", canvas.width / 2, 270);
+}
+
+function drawHUD() {
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "left";
+  ctx.font = "20px Arial";
+  ctx.fillText(`Health: ${player.health}`, 20, 34);
+  ctx.fillText(`High: `, 20, 62);
 }
 
 function drawGround() {
@@ -63,15 +89,22 @@ function drawPlayer() {
     image = player_happy;
   } else if (player.state === "jump") {
     image = player_jump;
+  } else if (player.state === "sad") {
+    image = player_sad;
   }
   ctx.fillStyle = "#7dd3fc";
   ctx.drawImage(image, player.x, player.y, player.w, player.h);
 }
 
 function drawPlaying() {
+  ctx.save();
+
+  applyShake();
+
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawGround();
+  drawHUD();
   drawLemon();
   drawPlatforms();
   drawEnemies();
@@ -82,4 +115,6 @@ function drawPlaying() {
     var obstacle = obstacles[i];
     ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
   }
+
+  ctx.restore();
 }

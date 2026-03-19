@@ -1,5 +1,6 @@
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
+var screenShake = 25;
 
 var GROUND_Y = 600;
 var GRAVITY = 0.65;
@@ -67,9 +68,9 @@ var playerModel = {
   health: 3,
   iFrames: 0,
   knockbackL: 0,
-  knockbackR: 0
+  knockbackR: 0,
 };
-var player = {... playerModel};
+var player = { ...playerModel };
 
 var obstacles = [];
 var platforms = [];
@@ -77,13 +78,7 @@ var lemons = [];
 var enemies = [];
 var levelGenerated = false;
 
-function generatePlatform(
-  width,
-  height,
-  xPos,
-  yPos,
-  typeColor = "blue",
-) {
+function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
   platforms.push({ w: width, h: height, x: xPos, y: yPos, color: typeColor });
 }
 
@@ -102,7 +97,14 @@ function generateObstacles(xPos, yPos, typeColor = "blue") {
 }
 
 function generateEnemy(xPos, yPos, typeColor, eType = "normal") {
-  enemies.push({ w: 40, h: 40, x: xPos, y: yPos, type: eType, color: typeColor });
+  enemies.push({
+    w: 40,
+    h: 40,
+    x: xPos,
+    y: yPos,
+    type: eType,
+    color: typeColor,
+  });
 }
 
 function aabb(a, b) {
@@ -137,7 +139,7 @@ function isLeft(a, b) {
 }
 
 function isRight(a, b) {
-  return a.x + a.w < b.x + b.w
+  return a.x + a.w < b.x + b.w;
 }
 
 function onPlat(a) {
@@ -172,18 +174,21 @@ function playerPlatformCollide() {
 }
 
 function playerEnemyCollide() {
-  if(player.iFrames <= 0){
+  if (player.iFrames <= 0) {
     for (let i = 0; i < enemies.length; i++) {
       if (aabb(enemies[i], player)) {
+        triggerShake(screenShake);
         player.health -= 1;
         player.iFrames = 20;
-        if(isLeft(enemies[i], player)){
+        if (isLeft(enemies[i], player)) {
           player.knockbackL = 10;
-        }
-        else if(isRight(enemies[i], player)) {
+        } else if (isRight(enemies[i], player)) {
           player.knockbackR = 10;
         }
-        if (player.health <= 0){
+        if (player.health < 0) {
+          player.health = 0;
+        }
+        if (player.health <= 0) {
           gameState.currentState = STATES.GAMEOVER;
         }
       }
@@ -226,11 +231,13 @@ function enemyDamaged(enemy) {
 }
 
 function playerIFrameUpdate(deltaTime) {
-  if (player.iFrames > 0){
+  if (player.iFrames > 0) {
     player.iFrames -= 1 * deltaTime;
+    player.state = "sad";
   }
   if (player.iFrames < 0) {
     player.iFrames = 0;
+    player.state = "happy";
   }
 }
 
@@ -241,16 +248,15 @@ function playerKnockBack(deltaTime) {
     player.knockbackR -= 1 * deltaTime;
     player.knockbackL = 0;
     if (player.knockbackR < 0) {
-      player.knockbackR = 0
+      player.knockbackR = 0;
     }
-  }
-  else if(player.knockbackL > 0) {
+  } else if (player.knockbackL > 0) {
     player.x -= 9 * deltaTime;
-    player.y -=3 * deltaTime;
+    player.y -= 3 * deltaTime;
     player.knockbackL -= 1 * deltaTime;
     player.knockbackR = 0;
     if (player.knockbackL < 0) {
-      player.knockbackL = 0
+      player.knockbackL = 0;
     }
   }
 }
@@ -343,9 +349,7 @@ function playerUpdate(deltaTime) {
   playerKnockBack(deltaTime);
 }
 
-function enemyUpdate(deltaTime) {
-
-}
+function enemyUpdate(deltaTime) {}
 
 function updatePlaying(deltaTime) {
   if (!levelGenerated) {
@@ -362,8 +366,9 @@ function resetGame() {
   lemons.length = 0;
   obstacles.length = 0;
   levelGenerated = false;
+  triggerShake(0);
 
-  player = {... playerModel};
+  player = { ...playerModel };
   /*
   player.x = 250;
   player.y = 100;
