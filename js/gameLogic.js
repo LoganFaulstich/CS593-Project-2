@@ -44,7 +44,7 @@ var gameState = {
   score: 0,
 };
 
-var player = {
+var playerModel = {
   x: 250,
   y: 100,
   w: 40,
@@ -59,7 +59,12 @@ var player = {
   color: "green",
   canJump: true,
   facing: "right",
+  health: 3,
+  iFrames: 0,
+  knockbackL: 0,
+  knockbackR: 0
 };
+var player = {... playerModel};
 
 var obstacles = [];
 var platforms = [];
@@ -91,8 +96,8 @@ function generateObstacles(xPos, yPos, typeColor = "blue") {
   obstacles.push({ w: 40, h: 40, x: xPos, y: yPos, color: typeColor });
 }
 
-function generateEnemy(xPos, yPos, typeColor) {
-  enemies.push({ w: 40, h: 40, x: xPos, y: yPos, color: typeColor });
+function generateEnemy(xPos, yPos, typeColor, eType = "normal") {
+  enemies.push({ w: 40, h: 40, x: xPos, y: yPos, type: eType, color: typeColor });
 }
 
 function aabb(a, b) {
@@ -107,6 +112,14 @@ function isAbove(a, b) {
 
 function isBelow(a, b) {
   return a.y + a.h > b.y + b.h;
+}
+
+function isLeft(a, b) {
+  return a.x > b.x;
+}
+
+function isRight(a, b) {
+  return a.x + a.w < b.x + b.w
 }
 
 function onPlat(a) {
@@ -136,6 +149,56 @@ function playerPlatformCollide() {
       if (isBelow(player, platforms[i])) {
         player.y = platforms[i].y + platforms[i].h;
       }
+    }
+  }
+}
+
+function playerEnemyCollide() {
+  if(player.iFrames <= 0){
+    for (let i = 0; i < enemies.length; i++) {
+      if (aabb(enemies[i], player)) {
+        player.health -= 1;
+        player.iFrames = 20;
+        if(isLeft(enemies[i], player)){
+          player.knockbackL = 10;
+        }
+        else if(isRight(enemies[i], player)) {
+          player.knockbackR = 10;
+        }
+        if (player.health <= 0){
+          gameState.currentState = STATES.GAMEOVER;
+        }
+      }
+    }
+  }
+}
+
+function playerIFrameUpdate(){
+  if (player.iFrames > 0){
+    player.iFrames -= 1;
+  }
+  if (player.iFrames < 0) {
+    player.iFrames = 0;
+  }
+}
+
+function playerKnockBack() {
+  if (player.knockbackL <= player.knockbackR && player.knockbackR > 0) {
+    player.x += 9;
+    player.y -= 3;
+    player.knockbackR -= 1;
+    player.knockbackL = 0;
+    if (player.knockbackR < 0) {
+      player.knockbackR = 0
+    }
+  }
+  else if(player.knockbackL > 0) {
+    player.x -= 9;
+    player.y -=3;
+    player.knockbackL -= 1;
+    player.knockbackR = 0;
+    if (player.knockbackL < 0) {
+      player.knockbackL = 0
     }
   }
 }
@@ -204,7 +267,7 @@ function playerUpdate() {
       }
     }
   }
-
+  
   player.x += player.xSpeed;
 
   if (player.x >= canvas.width - player.w) {
@@ -219,6 +282,9 @@ function playerUpdate() {
     player.ySpeed = 0;
     player.canJump = true;
   }
+  playerEnemyCollide();
+  playerIFrameUpdate();
+  playerKnockBack();
 }
 
 function enemyUpdate() {
@@ -241,6 +307,8 @@ function resetGame() {
   obstacles.length = 0;
   levelGenerated = false;
 
+  player = {... playerModel};
+  /*
   player.x = 250;
   player.y = 100;
   player.w = 40;
@@ -255,4 +323,9 @@ function resetGame() {
   player.color = "green";
   player.facing = "right";
   player.canJump = true;
+  player.health = 3;
+  player.iFrames = 0;
+  player.knockbackL = 0;
+  player.knockbackR = 0;
+  */
 }
