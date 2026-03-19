@@ -178,29 +178,29 @@ function playerEnemyCollide() {
   }
 }
 
-function playerIFrameUpdate(){
+function playerIFrameUpdate(deltaTime) {
   if (player.iFrames > 0){
-    player.iFrames -= 1;
+    player.iFrames -= 1 * deltaTime;
   }
   if (player.iFrames < 0) {
     player.iFrames = 0;
   }
 }
 
-function playerKnockBack() {
+function playerKnockBack(deltaTime) {
   if (player.knockbackL <= player.knockbackR && player.knockbackR > 0) {
-    player.x += 9;
-    player.y -= 3;
-    player.knockbackR -= 1;
+    player.x += 9 * deltaTime;
+    player.y -= 3 * deltaTime;
+    player.knockbackR -= 1 * deltaTime;
     player.knockbackL = 0;
     if (player.knockbackR < 0) {
       player.knockbackR = 0
     }
   }
   else if(player.knockbackL > 0) {
-    player.x -= 9;
-    player.y -=3;
-    player.knockbackL -= 1;
+    player.x -= 9 * deltaTime;
+    player.y -=3 * deltaTime;
+    player.knockbackL -= 1 * deltaTime;
     player.knockbackR = 0;
     if (player.knockbackL < 0) {
       player.knockbackL = 0
@@ -291,8 +291,8 @@ function playerUpdate(deltaTime) {
     player.canJump = true;
   }
   playerEnemyCollide();
-  playerIFrameUpdate();
-  playerKnockBack();
+  playerIFrameUpdate(deltaTime);
+  playerKnockBack(deltaTime);
 }
 
 function enemyUpdate(deltaTime) {
