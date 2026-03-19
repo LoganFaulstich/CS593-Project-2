@@ -111,6 +111,19 @@ function aabb(a, b) {
   );
 }
 
+function rectCircle(rect, circle) { 
+  try{
+  const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w)); 
+  const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h)); 
+  const dx = circle.x - closestX; 
+  const dy = circle.y - closestY; 
+  return (dx * dx + dy * dy) <= circle.r * circle.r; 
+  }
+  catch (e){
+    return false;
+  }
+} 
+
 function isAbove(a, b) {
   return a.y < b.y;
 }
@@ -178,6 +191,40 @@ function playerEnemyCollide() {
   }
 }
 
+function lemonPlatformCollide(lemonNo) {
+  let i = lemonNo;
+  console.log(i);
+  let collision = false;
+  console.log(lemons[i])
+  for (let j = 0; j < platforms.length; j++) {
+    if (rectCircle(platforms[j], lemons[i])) {
+      collision = true;
+      break;
+    }
+  } 
+  return collision;
+}
+
+function lemonEnemyCollision(lemonNo) {
+  let i = lemonNo;
+  console.log(i);
+  let collision = false;
+  console.log(lemons[i])
+  for (let j = 0; j < enemies.length; j++) {
+    if (rectCircle(enemies[j], lemons[i])) {
+      collision = true;
+      enemyDamaged(j);
+      break;
+    }
+  } 
+  return collision;
+}
+
+function enemyDamaged(enemy) {
+  enemies.splice(enemy, 1);
+
+}
+
 function playerIFrameUpdate(deltaTime) {
   if (player.iFrames > 0){
     player.iFrames -= 1 * deltaTime;
@@ -225,7 +272,8 @@ function lemonUpdate(deltaTime) {
     lemons[i].x += lemons[i].xSpeed * deltaTime;
     if (
       lemons[i].x - lemons[i].r > canvas.width ||
-      lemons[i].x + lemons[i].r < 0
+      lemons[i].x + lemons[i].r < 0 ||
+      lemonPlatformCollide(i) || lemonEnemyCollision(i)
     ) {
       lemons.splice(i, 1);
     }
