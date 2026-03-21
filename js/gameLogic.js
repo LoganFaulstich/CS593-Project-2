@@ -1,8 +1,6 @@
 var canvas = document.getElementById("game");
 var ctx = canvas.getContext("2d");
 var screenShake = 25;
-
-var GROUND_Y = 600;
 var GRAVITY = 0.65;
 var decelerationRate = 2.5;
 var jumpImpulse = -15;
@@ -33,7 +31,8 @@ var LEVEL_MAP = {
 };
 
 var level1 = [
-  [600, 40, 150, 450],
+  [250, 40, 150, 450],
+  [250, 40, 500, 450],
   [100, 40, 200, 300],
   [100, 40, 400, 300],
   [100, 40, 600, 300],
@@ -48,8 +47,21 @@ var gameState = {
   currentState: STATES.MENU,
   score: 0,
 };
+// default state is objectively wrong values so that the checker can identify correct values.
+const BORDERINIT = {
+  left: 900,
+  right: 0
+};
+var stageBorder = {... BORDERINIT};
 
-var playerModel = {
+const DIRECTION = {
+  LEFT: "left",
+  RIGHT: "right",
+  UP: "above",
+  DOWN: "below"
+};
+
+const playerModel = {
   x: 250,
   y: 100,
   w: 40,
@@ -78,6 +90,14 @@ var lemons = [];
 var enemies = [];
 var levelGenerated = false;
 
+const ENEMYTYPE = {
+    NORMAL: {xSpeed: 3, ySpeed: 0, gravity: true, canJump: false},
+    FLYING: {xSpeed: 2, ySpeed: 2, gravity: false, canJump: false},
+    BOSS: {xSpeed: 2, ySpeed: 0, gravity: true, canJump: true}
+}
+
+
+
 function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
   platforms.push({ w: width, h: height, x: xPos, y: yPos, color: typeColor });
 }
@@ -87,9 +107,11 @@ function generateLevel(level) {
     generatePlatform(plat[0], plat[1], plat[2], plat[3]);
   });
   // create default enemies on the ground and a platform so they are visible
-  generateEnemy(500, GROUND_Y - 40, "red");
+  generateEnemy(500, 560, "red");
   generateEnemy(210, 260, "red");
+  borderCheck();
   levelGenerated = true;
+  
 }
 
 function generateObstacles(xPos, yPos, typeColor = "blue") {
@@ -104,7 +126,20 @@ function generateEnemy(xPos, yPos, typeColor, eType = "normal") {
     y: yPos,
     type: eType,
     color: typeColor,
+    falling: 0
   });
+}
+
+function borderCheck(){
+  stageBorder = {... BORDERINIT}
+  platforms.forEach(plat => {
+    if(stageBorder.left > plat.x){
+      stageBorder.left = plat.x
+    }
+    if (stageBorder.right < plat.x + plat.w){
+      stageBorder.right = plat.x + plat.w
+    }
+  })
 }
 
 function aabb(a, b) {
@@ -142,6 +177,35 @@ function isRight(a, b) {
   return a.x + a.w < b.x + b.w;
 }
 
+function goThroughY(a, b, speedy, speedx) {
+  if((a.x <= b.x + b.w && a.x + a.w >= b.x) ||(a.x + speedx <= b.x + b.w && a.x + speedx + a.w >= b.x)){
+    if(isAbove(a, b) && a.y + speedy > b.y) {
+      return DIRECTION.UP;
+    }
+    else if (isBelow(a,b) && a.y +a.h + speedy < b.y + b.h) {
+      return DIRECTION.DOWN;
+    }
+  }
+  else {
+    return "clear";
+  }
+}
+
+function goThroughX(a, b, speedx, speedy)
+{
+  if((a.y <= b.y + b.h && a.y + a.h >= b.y)||(a.y + speedy <= b.y + b.h && a.y + speedy + a.h >= b.y)) {
+    if(isLeft(b,a) && a.x + speedx > b.x) {
+      return DIRECTION.LEFT;
+    } else if (isRight(b,a) && a.x + a.w + speedy < b.x + b.w){
+      return DIRECTION.RIGHT;
+    }
+  }
+  else {
+    return "clear";
+  }
+}
+
+
 function onPlat(a) {
   let onSolid = false;
   platforms.forEach((plat) => {
@@ -168,7 +232,7 @@ function playerPlatformCollide() {
       }
       if (isBelow(player, platforms[i])) {
         player.y = platforms[i].y + platforms[i].h;
-      }
+      }      
     }
   }
 }
@@ -198,9 +262,7 @@ function playerEnemyCollide() {
 
 function lemonPlatformCollide(lemonNo) {
   let i = lemonNo;
-  console.log(i);
   let collision = false;
-  console.log(lemons[i])
   for (let j = 0; j < platforms.length; j++) {
     if (rectCircle(platforms[j], lemons[i])) {
       collision = true;
@@ -212,9 +274,7 @@ function lemonPlatformCollide(lemonNo) {
 
 function lemonEnemyCollision(lemonNo) {
   let i = lemonNo;
-  console.log(i);
   let collision = false;
-  console.log(lemons[i])
   for (let j = 0; j < enemies.length; j++) {
     if (rectCircle(enemies[j], lemons[i])) {
       collision = true;
@@ -293,6 +353,7 @@ function playerUpdate(deltaTime) {
   } else {
     player.state = "happy";
   }
+
   playerPlatformCollide();
   player.y += player.ySpeed * deltaTime;
 
@@ -338,18 +399,90 @@ function playerUpdate(deltaTime) {
   if (player.x <= 0) {
     player.x = 0;
   }
-
-  if (player.y + player.h >= GROUND_Y) {
-    player.y = GROUND_Y - player.h;
-    player.ySpeed = 0;
-    player.canJump = true;
+  if(player.y >= canvas.height) {
+    gameState.currentState = STATES.GAMEOVER
   }
+
   playerEnemyCollide();
   playerIFrameUpdate(deltaTime);
   playerKnockBack(deltaTime);
 }
 
-function enemyUpdate(deltaTime) {}
+function enemyUpdate(deltaTime) {
+  let enemy = {};
+  for(i = 0; i < enemies.length; i++)
+  {
+    enemy = enemies[i];
+    movement = enemyMove(enemy);
+    grounded = onPlat(enemy);
+    
+    if(isLeft(enemy, player) 
+      && enemy.x + enemy.w - movement.xSpeed*deltaTime > stageBorder.left) {
+      enemy.x -= movement.xSpeed *deltaTime;
+    }
+    if(isRight(enemy, player) 
+      && enemy.x+movement.xSpeed*deltaTime < stageBorder.right) {
+      enemy.x += movement.xSpeed *deltaTime;
+    }
+    if(movement.gravity && !grounded) {
+      enemy.falling += GRAVITY * deltaTime;
+    }
+    else {
+      enemy.falling = 0;
+    }
+    if(isAbove(player, enemy)) {
+      enemy.y -= movement.ySpeed *deltaTime;
+      if(movement.canJump){
+        if (grounded){
+          enemy.falling = -15;
+        }
+      }
+    }
+    if(isBelow(player, enemy)) {
+      enemy.y += movement.ySpeed * deltaTime;
+    }
+    enemyPlatformCollide(enemy, movement, enemy.falling);
+    enemy.y += enemy.falling * deltaTime;
+  }
+}
+
+function enemyMove(enemy){
+  switch(enemy.type) {
+    case "normal":
+      return ENEMYTYPE.NORMAL;
+    case "flying":
+      return ENEMYTYPE.FLYING;
+    case "boss":
+      return ENEMYTYPE.FLYING;
+  }
+}
+
+function enemyPlatformCollide(enemy, movement, falling) {
+  let sideCollide = "clear"
+  let horizonCollide = "clear"
+  for (let j = 0; j < platforms.length; j++) {
+    sideCollide = goThroughX(enemy, platforms[j], movement.xSpeed, movement.ySpeed + falling)
+    horizonCollide = goThroughY(enemy, platforms[j], movement.ySpeed + falling, movement.xSpeed)
+    if (aabb(enemy, platforms[j])) {
+      enemy.falling = 0;
+      if(isAbove(enemy, platforms[j])){
+        enemy.y = platforms[j].y - enemy.h;
+      }
+      else if (isBelow(platforms[j], enemy)) {
+        enemy.y =platforms[j].y + platforms[j].h;
+      }
+      break;
+    }
+    else{
+      if (sideCollide === DIRECTION.UP){
+        enemy.y = platforms[j].y - enemy.h;
+      }
+      if(sideCollide === DIRECTION.DOWN){
+        enemy.y =platforms[j].y + platforms[j].h;
+      }
+    }
+  } 
+}
 
 function updatePlaying(deltaTime) {
   if (!levelGenerated) {

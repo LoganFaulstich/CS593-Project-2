@@ -59,12 +59,12 @@ function drawHUD() {
   ctx.fillText(`Health: ${player.health}`, 20, 34);
   ctx.fillText(`High: `, 20, 62);
 }
-
+/*
 function drawGround() {
   ctx.fillStyle = "#2f2f2f";
   ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
 }
-
+*/
 function drawPlatforms() {
   platforms.forEach((plat) => {
     ctx.fillStyle = plat.color;
@@ -107,7 +107,7 @@ function drawPlaying() {
 
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  drawGround();
+  //drawGround();
   drawHUD();
   drawLemon();
   drawPlatforms();
