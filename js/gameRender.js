@@ -57,7 +57,8 @@ function drawHUD() {
   ctx.textAlign = "left";
   ctx.font = "20px Arial";
   ctx.fillText(`Health: ${player.health}`, 20, 34);
-  ctx.fillText(`High: `, 20, 62);
+  ctx.fillText(`High: ${gameState.highScore}`, 20, 62);
+  ctx.fillText(`Score: ${gameState.score}`, 20, 90)
 }
 /*
 function drawGround() {

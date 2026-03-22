@@ -38,6 +38,16 @@ var level1 = [
   [100, 40, 600, 300],
   [700, 40, 100, 600],
 ];
+var wave1 = [
+  [
+    [500, 560, "red"],
+    [500, 260, "red"]
+  ],
+  [
+    [500, 560, "red", "flying"],
+    [500, 260, "red", "boss"]
+  ]
+]
 
 var time = {
   lastTime: 0,
@@ -46,6 +56,7 @@ var time = {
 var gameState = {
   currentState: STATES.MENU,
   score: 0,
+  highScore: 0
 };
 // default state is objectively wrong values so that the checker can identify correct values.
 const BORDERINIT = {
@@ -107,8 +118,7 @@ function generateLevel(level) {
     generatePlatform(plat[0], plat[1], plat[2], plat[3]);
   });
   // create default enemies on the ground and a platform so they are visible
-  generateEnemy(500, 560, "red");
-  generateEnemy(210, 260, "red");
+  spawnEnemies(wave1[0])
   borderCheck();
   levelGenerated = true;
   
@@ -129,7 +139,18 @@ function generateEnemy(xPos, yPos, typeColor, eType = "normal") {
     falling: 0
   });
 }
-
+function spawnEnemies(enemyLoc) {
+  enemyLoc.forEach(stats =>
+  {
+    if(stats.length === 3){
+      generateEnemy(stats[0], stats[1], stats[2]);
+    }
+    else if(stats.length ===4){
+      generateEnemy(stats[0], stats[1], stats[2], stats[3]);
+    }
+  }
+  )
+}
 function borderCheck(){
   stageBorder = {... BORDERINIT}
   platforms.forEach(plat => {
@@ -287,7 +308,7 @@ function lemonEnemyCollision(lemonNo) {
 
 function enemyDamaged(enemy) {
   enemies.splice(enemy, 1);
-
+  gameState.score += 10;
 }
 
 function playerIFrameUpdate(deltaTime) {
@@ -401,6 +422,9 @@ function playerUpdate(deltaTime) {
   }
   if(player.y >= canvas.height) {
     gameState.currentState = STATES.GAMEOVER
+    if(gameState.highScore < gameState.score) {
+      gameState.highScore = gameState.score;
+    }
   }
 
   playerEnemyCollide();
@@ -418,7 +442,7 @@ function enemyUpdate(deltaTime) {
     
     if(isLeft(enemy, player) 
       && enemy.x + enemy.w - movement.xSpeed*deltaTime > stageBorder.left) {
-      enemy.x -= movement.xSpeed *deltaTime;
+      enemy.x -= movement.xSpeed * deltaTime;
     }
     if(isRight(enemy, player) 
       && enemy.x+movement.xSpeed*deltaTime < stageBorder.right) {
@@ -443,6 +467,10 @@ function enemyUpdate(deltaTime) {
     }
     enemyPlatformCollide(enemy, movement, enemy.falling);
     enemy.y += enemy.falling * deltaTime;
+    if(enemy.y > canvas.height)
+    {
+      enemies.splice(i, 1)
+    }
   }
 }
 
@@ -453,7 +481,7 @@ function enemyMove(enemy){
     case "flying":
       return ENEMYTYPE.FLYING;
     case "boss":
-      return ENEMYTYPE.FLYING;
+      return ENEMYTYPE.BOSS;
   }
 }
 
@@ -468,7 +496,7 @@ function enemyPlatformCollide(enemy, movement, falling) {
       if(isAbove(enemy, platforms[j])){
         enemy.y = platforms[j].y - enemy.h;
       }
-      else if (isBelow(platforms[j], enemy)) {
+      else if (isBelow(enemy, platforms[j])) {
         enemy.y =platforms[j].y + platforms[j].h;
       }
       break;
@@ -491,6 +519,9 @@ function updatePlaying(deltaTime) {
   playerUpdate(deltaTime);
   lemonUpdate(deltaTime);
   enemyUpdate(deltaTime);
+  if(enemies.length ===0){
+    spawnEnemies(wave1[1]);
+  }
 }
 
 function resetGame() {
@@ -502,6 +533,7 @@ function resetGame() {
   triggerShake(0);
 
   player = { ...playerModel };
+  gameState.score = 0;
   /*
   player.x = 250;
   player.y = 100;
