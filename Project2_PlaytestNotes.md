@@ -1,8 +1,8 @@
-understood quickly:
+Understood quickly:
 
-where they were confused:
+Where they were confused:
 
-what felt satisfying/frustrating:
+What felt satisfying/frustrating:
 
-changes from feedback:
+Changes from feedback:
 

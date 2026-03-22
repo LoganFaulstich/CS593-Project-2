@@ -10,6 +10,7 @@ function setupInput() {
       if (action === "jump" && player.canJump && onPlat(player)) {
         player.ySpeed = -15;
         player.canJump = false;
+        playJumpSound();
       }
       if (action === "left" && player.xSpeed > -player.walkCap) {
         player.decelerateLeft = false;

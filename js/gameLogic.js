@@ -4,6 +4,7 @@ var screenShake = 25;
 var GRAVITY = 0.65;
 var decelerationRate = 2.5;
 var jumpImpulse = -15;
+var iFramesDuration = 60;
 
 var STATES = {
   MENU: "menu",
@@ -264,7 +265,8 @@ function playerEnemyCollide() {
       if (aabb(enemies[i], player)) {
         triggerShake(screenShake);
         player.health -= 1;
-        player.iFrames = 20;
+        player.iFrames = iFramesDuration;
+        playDamageSound();
         if (isLeft(enemies[i], player)) {
           player.knockbackL = 10;
         } else if (isRight(enemies[i], player)) {
@@ -300,6 +302,7 @@ function lemonEnemyCollision(lemonNo) {
     if (rectCircle(enemies[j], lemons[i])) {
       collision = true;
       enemyDamaged(j);
+        playEnemyDamageSound();
       break;
     }
   } 
@@ -352,6 +355,7 @@ function fireLemon() {
     facing: player.facing,
     color: "orange",
   });
+  playShootSound();
 }
 
 function lemonUpdate(deltaTime) {
