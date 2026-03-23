@@ -1,5 +1,6 @@
 function setupInput() {
   document.addEventListener("keydown", function (e) {
+    startPlaying = true;
     var action = ACTION_MAP[e.key];
     if (action) e.preventDefault();
 
@@ -52,4 +53,6 @@ function setupInput() {
       }
     }
   });
+  document.addEventListener('click', function() {startPlaying = true;}, {once: true});
 }
+

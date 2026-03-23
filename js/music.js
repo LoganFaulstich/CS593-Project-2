@@ -12,9 +12,10 @@ gameMusic.loop = true;
 gameOverMusic.loop = true;
 
 var trackedState = null;
+var startPlaying = false;
 
 function updateMusic() {
-  if (gameState.currentState !== trackedState) {
+  if (gameState.currentState !== trackedState && startPlaying) {
     trackedState = gameState.currentState;
     switch (trackedState) {
       case STATES.MENU:
@@ -74,3 +75,4 @@ function playEnemyDamageSound() {
   enemyDamageSound.currentTime = 0;
   enemyDamageSound.play();
 }   
+
