@@ -39,15 +39,11 @@ var level1 = [
   [100, 40, 600, 300],
   [700, 40, 100, 600],
 ];
-var wave1 = [
-  [
-    [500, 560, "red"],
-    [500, 260, "red"]
-  ],
-  [
-    [500, 560, "red", "flying"],
-    [500, 260, "red", "boss"]
-  ]
+
+
+const  spawnPoints = [
+  {x: 500, y: 560},
+  {x: 500, y:260}
 ]
 
 var time = {
@@ -103,11 +99,20 @@ var enemies = [];
 var levelGenerated = false;
 
 const ENEMYTYPE = {
-    NORMAL: {xSpeed: 3, ySpeed: 0, gravity: true, canJump: false},
-    FLYING: {xSpeed: 2, ySpeed: 2, gravity: false, canJump: false},
-    BOSS: {xSpeed: 2, ySpeed: 0, gravity: true, canJump: true}
+    NORMAL: {type:"normal", xSpeed: 3, ySpeed: 0, gravity: true, canJump: false},
+    FLYING: {type: "flying", xSpeed: 2, ySpeed: 2, gravity: false, canJump: false},
+    SPRING: {type: "spring", xSpeed: 2, ySpeed: 0, gravity: true, canJump: true}
 }
-
+var wave1 = [
+  [
+    [0, "red"],
+    [1, "red"]
+  ],
+  [
+    [0, "red", ENEMYTYPE.SPRING],
+    [1, "red", ENEMYTYPE.FLYING]
+  ]
+]
 
 
 function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
@@ -129,7 +134,7 @@ function generateObstacles(xPos, yPos, typeColor = "blue") {
   obstacles.push({ w: 40, h: 40, x: xPos, y: yPos, color: typeColor });
 }
 
-function generateEnemy(xPos, yPos, typeColor, eType = "normal") {
+function generateEnemy(xPos, yPos, typeColor, eType = ENEMYTYPE.NORMAL) {
   enemies.push({
     w: 40,
     h: 40,
@@ -140,14 +145,29 @@ function generateEnemy(xPos, yPos, typeColor, eType = "normal") {
     falling: 0
   });
 }
+function spawnCollision(simulatedLoc) {
+  if (enemies.length > 0)
+  {
+    enemies.forEach(enemy => {
+      if(aabb(enemy, simulatedLoc)) {
+        return true;
+      }
+    })
+  }
+  return false;
+}
 function spawnEnemies(enemyLoc) {
+  let sim = {}
   enemyLoc.forEach(stats =>
   {
-    if(stats.length === 3){
-      generateEnemy(stats[0], stats[1], stats[2]);
-    }
-    else if(stats.length ===4){
-      generateEnemy(stats[0], stats[1], stats[2], stats[3]);
+    sim = {x: spawnPoints[stats[0]].x, y: spawnPoints[stats[0]].y, w: 40, h: 40}
+    if (!aabb(player, sim) && !spawnCollision(sim)){
+      if(stats.length === 2){
+        generateEnemy(sim.x, sim.y, stats[1]);
+      }
+      else if(stats.length ===3){
+        generateEnemy(spawnPoints[stats[0]].x, spawnPoints[stats[0]].y, stats[1], stats[2]);
+      }
     }
   }
   )
@@ -426,11 +446,7 @@ function playerUpdate(deltaTime) {
   }
   if(player.y >= canvas.height) {
     gameState.currentState = STATES.GAMEOVER
-    if(gameState.highScore < gameState.score) {
-      gameState.highScore = gameState.score;
-    }
   }
-
   playerEnemyCollide();
   playerIFrameUpdate(deltaTime);
   playerKnockBack(deltaTime);
@@ -441,7 +457,7 @@ function enemyUpdate(deltaTime) {
   for(i = 0; i < enemies.length; i++)
   {
     enemy = enemies[i];
-    movement = enemyMove(enemy);
+    movement = enemy.type;
     grounded = onPlat(enemy);
     
     if(isLeft(enemy, player) 
@@ -458,16 +474,17 @@ function enemyUpdate(deltaTime) {
     else {
       enemy.falling = 0;
     }
-    if(isAbove(player, enemy)) {
+    if(player.y + player.h/4 < enemy.y + enemy.h) {
       enemy.y -= movement.ySpeed *deltaTime;
-      if(movement.canJump){
+    }
+    if(movement.canJump){
         if (grounded){
           enemy.falling = -15;
         }
-      }
     }
-    if(isBelow(player, enemy)) {
+    if(player.y > enemy.y + enemy.h/4 ) {
       enemy.y += movement.ySpeed * deltaTime;
+      
     }
     enemyPlatformCollide(enemy, movement, enemy.falling);
     enemy.y += enemy.falling * deltaTime;
@@ -478,16 +495,16 @@ function enemyUpdate(deltaTime) {
   }
 }
 
-function enemyMove(enemy){
+/*function enemyMove(enemy){
   switch(enemy.type) {
     case "normal":
       return ENEMYTYPE.NORMAL;
     case "flying":
       return ENEMYTYPE.FLYING;
-    case "boss":
-      return ENEMYTYPE.BOSS;
+    case "spring":
+      return ENEMYTYPE.SPRING;
   }
-}
+} */
 
 function enemyPlatformCollide(enemy, movement, falling) {
   let sideCollide = "clear"
@@ -523,7 +540,7 @@ function updatePlaying(deltaTime) {
   playerUpdate(deltaTime);
   lemonUpdate(deltaTime);
   enemyUpdate(deltaTime);
-  if(enemies.length ===0){
+  if(enemies.length < 2){
     spawnEnemies(wave1[1]);
   }
 }

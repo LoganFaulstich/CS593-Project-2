@@ -16,6 +16,9 @@ function gameLoop(currentTime) {
       drawPlaying();
       break;
     case STATES.GAMEOVER:
+      if(gameState.highScore < gameState.score) {
+      gameState.highScore = gameState.score;
+      }
       drawGameOver();
       break;
   }
