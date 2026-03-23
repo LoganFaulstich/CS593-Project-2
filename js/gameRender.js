@@ -33,7 +33,7 @@ function drawMenu() {
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.font = "bold 48px Arial";
-  ctx.fillText("Platform Shooter", canvas.width / 2, 150);
+  ctx.fillText("BROKEN BOX", canvas.width / 2, 150);
   ctx.font = "22px Arial";
   ctx.fillText("Press SPACE to start", canvas.width / 2, 220);
   ctx.fillText("Use WASD or Arrow Keys to move", canvas.width / 2, 255);

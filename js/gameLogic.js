@@ -42,8 +42,11 @@ var level1 = [
 
 
 const  spawnPoints = [
-  {x: 500, y: 560},
-  {x: 500, y:260}
+  {x: 500, y: 500},
+  {x: 500, y:260},
+  {x: 260, y: 360},
+  {x: 260, y: 500},
+
 ]
 
 var time = {
@@ -85,7 +88,7 @@ const playerModel = {
   canJump: true,
   facing: "right",
   state: "happy",
-  health: 3,
+  health: 6,
   iFrames: 0,
   knockbackL: 0,
   knockbackR: 0,
@@ -103,6 +106,8 @@ const ENEMYTYPE = {
     FLYING: {type: "flying", xSpeed: 2, ySpeed: 2, gravity: false, canJump: false},
     SPRING: {type: "spring", xSpeed: 2, ySpeed: 0, gravity: true, canJump: true}
 }
+
+/*
 var wave1 = [
   [
     [0, "red"],
@@ -113,8 +118,18 @@ var wave1 = [
     [1, "red", ENEMYTYPE.FLYING]
   ]
 ]
-
-
+  */
+const typeList = [ENEMYTYPE.NORMAL, ENEMYTYPE.NORMAL, ENEMYTYPE.NORMAL, ENEMYTYPE.FLYING, ENEMYTYPE.FLYING, ENEMYTYPE.SPRING]
+// Used to determine type frequency.
+function generateWave(count){
+  let spawns = []
+  let spawnCount = spawnPoints.length
+  let typeCount = typeList.length
+  for(i = 0; i < count; i++){
+    spawns.push([Math.floor(Math.random() * spawnCount), typeList[Math.floor(Math.random() * typeCount)]]);
+  }
+  return spawns;
+}
 function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
   platforms.push({ w: width, h: height, x: xPos, y: yPos, color: typeColor });
 }
@@ -124,7 +139,7 @@ function generateLevel(level) {
     generatePlatform(plat[0], plat[1], plat[2], plat[3]);
   });
   // create default enemies on the ground and a platform so they are visible
-  spawnEnemies(wave1[0])
+  spawnEnemies(generateWave(2))
   borderCheck();
   levelGenerated = true;
   
@@ -162,11 +177,11 @@ function spawnEnemies(enemyLoc) {
   {
     sim = {x: spawnPoints[stats[0]].x, y: spawnPoints[stats[0]].y, w: 40, h: 40}
     if (!aabb(player, sim) && !spawnCollision(sim)){
-      if(stats.length === 2){
-        generateEnemy(sim.x, sim.y, stats[1]);
+      if(stats.length === 1){
+        generateEnemy(sim.x, sim.y, "red");
       }
-      else if(stats.length ===3){
-        generateEnemy(spawnPoints[stats[0]].x, spawnPoints[stats[0]].y, stats[1], stats[2]);
+      else if(stats.length === 2){
+        generateEnemy(spawnPoints[stats[0]].x, spawnPoints[stats[0]].y, "red",  stats[1]);
       }
     }
   }
@@ -541,7 +556,7 @@ function updatePlaying(deltaTime) {
   lemonUpdate(deltaTime);
   enemyUpdate(deltaTime);
   if(enemies.length < 2){
-    spawnEnemies(wave1[1]);
+    spawnEnemies(generateWave(2));
   }
 }
 

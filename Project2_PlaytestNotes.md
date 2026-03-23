@@ -24,3 +24,4 @@ Different sprited enemies with two health points
 
 Changes made:
 boss enemy type renamed spring, jump is set to constant, meaning it is no longer feasible to camp at the bottom of the stage in the long term. flying enemy type now floats at a height that makes jumping to shoot it required.
+Added spawn point randomization, and more spawn point options. Also increaded spawn rate.
