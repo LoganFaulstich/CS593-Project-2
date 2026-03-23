@@ -1,14 +1,18 @@
 var image;
 var player_happy = new Image();
-player_happy.src = "assets/Player_Happy.png";
+player_happy.src = "assets/images/Player_Happy.png";
 var player_jump = new Image();
-player_jump.src = "assets/Player_Jump.png";
+player_jump.src = "assets/images/Player_Jump.png";
 var player_sad = new Image();
-player_sad.src = "assets/Player_Sad.png";
+player_sad.src = "assets/images/Player_Sad.png";
 
 var enemyImage;
-enemyImage = new Image();
-enemyImage.src = "assets/Enemy.png";
+var enemy_strong = new Image();
+enemy_strong.src = "assets/images/Enemy_Strong.png";
+var enemy_bounce = new Image();
+enemy_bounce.src = "assets/images/Enemy_Bounce.png";
+var enemy_fly = new Image();
+enemy_fly.src = "assets/images/Enemy_Fly.png";
 
 var shakeIntensity = 0;
 var shakeDecay = 0.9;
@@ -75,8 +79,13 @@ function drawPlatforms() {
 
 function drawEnemies() {
   enemies.forEach((enemy) => {
-    ctx.fillStyle = enemy.color || "red";
-    ctx.drawImage(enemyImage, enemy.x, enemy.y, enemy.w, enemy.h);
+    if (enemy.type.type === "normal") {
+      ctx.drawImage(enemy_strong, enemy.x, enemy.y, enemy.w, enemy.h);
+    } else if (enemy.type.type === "spring") {
+      ctx.drawImage(enemy_bounce, enemy.x, enemy.y, enemy.w, enemy.h);
+    } else if (enemy.type.type === "flying") {
+      ctx.drawImage(enemy_fly, enemy.x, enemy.y, enemy.w, enemy.h);
+    }
   });
 }
 

@@ -121,15 +121,49 @@ var wave1 = [
   */
 const typeList = [ENEMYTYPE.NORMAL, ENEMYTYPE.NORMAL, ENEMYTYPE.NORMAL, ENEMYTYPE.FLYING, ENEMYTYPE.FLYING, ENEMYTYPE.SPRING]
 // Used to determine type frequency.
-function generateWave(count){
-  let spawns = []
-  let spawnCount = spawnPoints.length
-  let typeCount = typeList.length
-  for(i = 0; i < count; i++){
-    spawns.push([Math.floor(Math.random() * spawnCount), typeList[Math.floor(Math.random() * typeCount)]]);
+function generateWave(count) {
+  let spawns = [];
+  let typeCount = typeList.length;
+  let spawnCount = spawnPoints.length;
+
+  // Find the index of the spawn point closest to the player
+  let closestIndex = -1;
+  let minDistance = Infinity;
+
+  // We use the center of the player for better accuracy
+  let playerCenterX = player.x + player.w / 2;
+  let playerCenterY = player.y + player.h / 2;
+
+  spawnPoints.forEach((point, index) => {
+    // Pythagorean theorem
+    let dist = Math.pow(playerCenterX - point.x, 2) + Math.pow(playerCenterY - point.y, 2);
+    
+    if (dist < minDistance) {
+      minDistance = dist;
+      closestIndex = index;
+    }
+  });
+
+  // Create a list of indices that are "safe" (not the closest)
+  let safeIndices = [];
+  for (let i = 0; i < spawnCount; i++) {
+    if (i !== closestIndex) {
+      safeIndices.push(i);
+    }
   }
+
+  // Generate the wave using only the safe indices
+  for (let i = 0; i < count; i++) {
+    // Pick a random index from our safe list
+    let randomIndex = safeIndices[Math.floor(Math.random() * safeIndices.length)];
+    let randomType = typeList[Math.floor(Math.random() * typeCount)];
+    
+    spawns.push([randomIndex, randomType]);
+  }
+
   return spawns;
 }
+
 function generatePlatform(width, height, xPos, yPos, typeColor = "blue") {
   platforms.push({ w: width, h: height, x: xPos, y: yPos, color: typeColor });
 }
