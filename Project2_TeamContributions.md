@@ -1,3 +1,3 @@
-Thomas: js for canvas, player object, action map, active states, platform collision, projectile firing, Platform and Obstacle Generation
+Thomas: js for canvas, player object, action map, active states, platform collision, projectile firing, Platform and Obstacle Generation, enemy movement logic, enemy collisions, projectile collision, enemy options, falling offscreen death, enemy wave system, general bugfixes
 
 Logan: Gameloop code, additional handlers, player movement logic, HUD design, graphics asset design and logic, screen shake, javascript code seperation
